@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>Chat</h1>
+    <div class="container">
+        <div class="col-sm-12">
+            <form id="message-form">
+                <div class="col-sm-10">
+                    <input type="text" id="user-message" class="form-control" placeholder="Enter message"/>
+                </div>
+                <div class="col-sm-2">
+                    <input class="btn btn-primary" type="submit" value="Send"/>
+                    
+            </form>
+            <ul id="messages">
+                <!-- JAVASCRIPT WILL POPULATE THIS -->
+            </ul>
+        </div>
+    </div>
+  </body>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io("http://localhost:9000");
+    socket.on("connect", () => {
+      console.log(socket.id);
+    });
+
+    socket.on("messageFromServer", (dataFromServer) => {
+      console.log(dataFromServer);
+      socket.emit("messageToServer", { data: "This is from the client!" });
+    });
+
+    socket.on('messageToClients', (msg) => {
+        console.log(msg);
+        // Add the message to the DOM
+        document.querySelector('#messages').innerHTML += `<li>${msg.text}</li>`
+    })
+
+    document.querySelector("#message-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const newMessage = document.querySelector("#user-message").value;
+        //console.log(newMessage);
+        socket.emit("newMessageToServer", { text: newMessage });
+    });
+  </script>
+</html>
